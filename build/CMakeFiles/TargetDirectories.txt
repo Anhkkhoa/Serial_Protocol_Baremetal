@@ -1,0 +1,6 @@
+C:/Users/anhkk/OneDrive/Documents/Engineering/Serial_Protocol_Baremetal/build/CMakeFiles/Serial_Protocol_Baremetal.dir
+C:/Users/anhkk/OneDrive/Documents/Engineering/Serial_Protocol_Baremetal/build/CMakeFiles/edit_cache.dir
+C:/Users/anhkk/OneDrive/Documents/Engineering/Serial_Protocol_Baremetal/build/CMakeFiles/rebuild_cache.dir
+C:/Users/anhkk/OneDrive/Documents/Engineering/Serial_Protocol_Baremetal/build/cmake/stm32cubemx/CMakeFiles/STM32_Drivers.dir
+C:/Users/anhkk/OneDrive/Documents/Engineering/Serial_Protocol_Baremetal/build/cmake/stm32cubemx/CMakeFiles/edit_cache.dir
+C:/Users/anhkk/OneDrive/Documents/Engineering/Serial_Protocol_Baremetal/build/cmake/stm32cubemx/CMakeFiles/rebuild_cache.dir
