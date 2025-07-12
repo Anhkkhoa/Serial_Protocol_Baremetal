@@ -1,2 +1,2 @@
-# bare_metal_driver
- Teached by Nick Fan from Long Beach Rocketry
+#Serial Protocol Baremetal
+UART, I2C, and SPI Baremetal. Taught by Nick Fan from Long Beach Rocketry
