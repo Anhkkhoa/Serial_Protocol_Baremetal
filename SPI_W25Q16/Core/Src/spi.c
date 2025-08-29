@@ -7,6 +7,10 @@ PA6 - SPI1 MISO
 PA7 - SPI1 MOSI
 
 W25Q16 Clock behavior: addresses or data to the device on the rising edge of CLK. The DO output pin is used to read data or status from the device on the falling edge of CLK. 
+
+Two mode: Hardware & Software Slave Management
++ Hardware: hardware control NSS automatically that just pulled low and then high after transfer. work when one master one slave
++ Software: software simulate and control NSS manually. Need to use this if multi-slave config SPI
 */
 
 void initSPI1() {
@@ -64,10 +68,27 @@ void configSPI1() {
     SPI1->CR2 |=    ((1u << 12) //RXNE event when FIFO level larger than 8-bit
                     |(6u << 10) // 7-bit SPI Transfer
                     |(1u << 2)); //SS output enable for master 
-
-    //Enable SPI Peripheral
-    SPI1->CR1 |= ((1u << 6));
 }
 
+uint8_t transferSPI(uint8_t tx_data) {
+    //rx data storing variable
+    uint8_t rx_data = 0;
 
+    //Enable SPI
+    SPI1->CR1 |= (1u << 6);
+
+    //Write to Data Register
+    SPI1->DR = (uint8_t)tx_data;
+
+    //Wainting until SPI is not busy and RX buffer is not empty to read
+    while(((SPI1->SR) & (1u << 7)) || (!((SPI1->SR) & (1u << 0))));
+
+    //read RX Buffer
+    rx_data = (uint8_t)SPI1->DR; 
+
+    //Disable SPI
+    SPI1->CR1 &= ~(1u << 6);
+
+    return rx_data;
+}
 
