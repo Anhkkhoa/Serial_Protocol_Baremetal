@@ -7,22 +7,38 @@ PA6 - SPI1 MISO
 PA7 - SPI1 MOSI
 
 W25Q16 Clock behavior: addresses or data to the device on the rising edge of CLK. The DO output pin is used to read data or status from the device on the falling edge of CLK. 
+
+Two mode: Hardware & Software Slave Management
++ Hardware: hardware control NSS automatically that just pulled low and then high after transfer. work when one master one slave
++ Software: software simulate and control NSS manually. Need to use this if multi-slave config SPI
 */
 
 void initSPI1() {
     //GPIOA SPI pin Initlize
-    RCC->AHB2ENR |= (1u << 0); //Enable bit 0 for GPIOA EN
+    RCC->AHB2ENR |= RCC_AHB2ENR_GPIOAEN; //Enable bit 0 for GPIOA EN
 
     //SPI Peripheral Clock Initilize
-    RCC->APB2ENR |= (1u << 12); // Enable bit 12 for SPI1 EN
+    RCC->APB2ENR |= RCC_APB2ENR_SPI1EN; // Enable bit 12 for SPI1 EN
 
     //Pin Alternate Mode
-    GPIOA->MODER &= ~((3u << (2 * 4)) | (3u << (2 * 5)) | (3u << (2 * 6)) | (3u << (2 * 7))) // Clearing MODER Bit PA4, PA5, PA6, PA7 with Analog Mode (Reset State)
-    GPIOA->MODER |= ((2u << (2 * 4)) | (2u << (2 * 5)) | (2u << (2 * 6)) | (2u << (2 * 7))) // Alternate Function for PA4, PA5, PA6, PA7
+    GPIOA->MODER &=    ~(GPIO_MODER_MODE4_Msk
+                        |GPIO_MODER_MODE5_Msk
+                        |GPIO_MODER_MODE6_Msk
+                        |GPIO_MODER_MODE7_Msk); // Clearing MODER Bit PA4, PA5, PA6, PA7
+    GPIOA->MODER |=     ((2u << GPIO_MODER_MODE4_Pos)
+                        |(2u << GPIO_MODER_MODE5_Pos)
+                        |(2u << GPIO_MODER_MODE6_Pos)
+                        |(2u << GPIO_MODER_MODE7_Pos)); // Alternate Function for PA4, PA5, PA6, PA7
 
     //Alternate Function Mode Selection (SPI1 AF5) 
-    GPIOA->AFR[0] &= ~((15u << (4 * 4)) | (15u << (4 * 5)) | (15u << (4 * 6)) | (15u << (4 * 7))); // Access AF Lower Register, Clear all SPI AF mode bit
-    GPIOA->AFR[0] |= ((5u << (4 * 4)) | (5u << (4 * 5)) | (5u << (4 * 6)) | (5u << (4 * 7))); //Setting to AF5
+    GPIOA->AFR[0] &=   ~(GPIO_AFRL_AFSEL4_Msk
+                        |GPIO_AFRL_AFSEL5_Msk
+                        |GPIO_AFRL_AFSEL6_Msk
+                        |GPIO_AFRL_AFSEL7_Msk); // Access AF Lower Register, Clear all SPI AF mode bit
+    GPIOA->AFR[0] |=    ((5u << GPIO_AFRL_AFSEL4_Pos)
+                        |(5u << GPIO_AFRL_AFSEL5_Pos)
+                        |(5u << GPIO_AFRL_AFSEL6_Pos)
+                        |(5u << GPIO_AFRL_AFSEL7_Pos)); //Setting to AF5
 }
 
 void configSPI1() {
@@ -52,10 +68,27 @@ void configSPI1() {
     SPI1->CR2 |=    ((1u << 12) //RXNE event when FIFO level larger than 8-bit
                     |(6u << 10) // 7-bit SPI Transfer
                     |(1u << 2)); //SS output enable for master 
-
-    //Enable SPI Peripheral
-    SPI1->CR1 |= ((1u << 6));
 }
 
+uint8_t transferSPI(uint8_t tx_data) {
+    //rx data storing variable
+    uint8_t rx_data = 0;
 
+    //Enable SPI
+    SPI1->CR1 |= (1u << 6);
+
+    //Write to Data Register
+    SPI1->DR = (uint8_t)tx_data;
+
+    //Wainting until SPI is not busy and RX buffer is not empty to read
+    while(((SPI1->SR) & (1u << 7)) || (!((SPI1->SR) & (1u << 0))));
+
+    //read RX Buffer
+    rx_data = (uint8_t)SPI1->DR; 
+
+    //Disable SPI
+    SPI1->CR1 &= ~(1u << 6);
+
+    return rx_data;
+}
 
