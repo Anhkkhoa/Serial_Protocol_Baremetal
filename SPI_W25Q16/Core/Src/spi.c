@@ -1,3 +1,4 @@
+#include "stm32l476xx.h"
 /*
 SPI Header Source File
 PA4 - SPI1 Chip Selection
@@ -41,8 +42,20 @@ void configSPI1() {
                     |(1u << 2)); //Master Mode
 
     //SPI Control Register 2
+    SPI1->CR2 &=   ~((1u << 7) // TXE interrupt masked
+                    |(1u << 6) // RXE interrupt masked
+                    |(1u << 5) // Error Interupt masket
+                    |(1u << 4) // Motorola Frame Format
+                    |(1u << 3) // No NSS Pulse
+                    |(1u << 1) | (1u << 0)); // TX & RX Buffer DMA disable
+
+    SPI1->CR2 |=    ((1u << 12) //RXNE event when FIFO level larger than 8-bit
+                    |(6u << 10) // 7-bit SPI Transfer
+                    |(1u << 2)); //SS output enable for master 
 
     //Enable SPI Peripheral
     SPI1->CR1 |= ((1u << 6));
 }
+
+
 
